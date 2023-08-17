@@ -1,0 +1,1 @@
+export const BASE_API = 'https://academy-backend-softworld.koyeb.app/api';
