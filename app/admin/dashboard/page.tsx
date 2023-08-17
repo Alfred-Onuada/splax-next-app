@@ -62,8 +62,42 @@ export default function Home() {
         <div className="rounded-[18px] bg-[#FBFBFB] shadow-sm md:py-[48px] md:px-[20px] py-[32px] px-[10px] flex text-center flex-col
           max-w-[100%] min-w-[100%] self-center mt-10">
             <div className='flex justify-between items-center'>
-              <h4 className='text-base'>Registered Applicants</h4>
+              <h4 className='text-base font-semibold'>Registered Applicants</h4>
               {/* Filters */}
+              <div className="flex">
+              <div className='flex items-center mr-[30px]'>
+                  <Image
+                    src='./../ic_filter.svg'
+                    alt='Filter Icon'
+                    width={15}
+                    height={15}
+                    className='mx-[10px]'
+                    />
+                  <h4 className='text-[#637381] font-nunito font-light'>Filter by type</h4>
+                </div>
+                <div className='flex items-center mr-[30px]'>
+                  <h4 className='text-[#637381] font-nunito font-light'>This Month</h4>
+                  <Image
+                    src='./../sharp-arrow-down.svg'
+                    alt='Sharp Arrow Down'
+                    width={15}
+                    height={15}
+                    className='mx-[10px]'
+                    />
+                </div>
+                <div className='relative'>
+                  <input type="search" placeholder='Search...'
+                    className='py-[5px] px-[40px] rounded-md border border-[#BFBFBF] w-[250px] font-nunito font-light'
+                    />
+                  <Image
+                    src='./../search.svg'
+                    alt='Search'
+                    width={20}
+                    height={20}
+                    className='absolute top-0 left-0 ml-3 mt-2'
+                    />
+                </div>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
