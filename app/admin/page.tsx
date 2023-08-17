@@ -1,8 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-// function to handle registration
-
 export default function Home() {
   return (
     <main className="bg-[#F3F4F6] min-w-[100vw] min-h-[100vh] flex md:justify-center items-center flex-col p-[20px] md:p-[70px]">

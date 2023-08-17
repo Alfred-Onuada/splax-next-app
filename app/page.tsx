@@ -8,20 +8,37 @@ import { useState } from 'react';
 
 export default function Home() {
   const [registrationSuccessful, setRegistrationSuccessful] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // function to handle registration
   const handleRegistration = async (e: any) => {
     e.preventDefault()
-    // get form data
+    setLoading(true);
 
+    // get form data
     const formData = new FormData(e.target)
     const data = Object.fromEntries(formData.entries())
 
-    const resp = await axios.post(`${BASE_API}/users`, data, { headers: { 'Content-Type': 'application/json' } });
+    const resp = await axios.post(`${BASE_API}/trainees/enroll`, data, { headers: { 'Content-Type': 'application/json' } });
 
-    console.log(resp);
+    if (resp.status === 201) {
+      setRegistrationSuccessful(true);
+      e.target.reset();
+      setLoading(false);
+      
+      setTimeout(() => {
+        setRegistrationSuccessful(false)
+      }, 3000);
+    } else {
+      setErrorMsg('An error occured, please try again');
+      setLoading(false);
 
-    setRegistrationSuccessful(true);
+      setTimeout(() => {
+        setErrorMsg('');
+        setRegistrationSuccessful(false)
+      }, 3000);
+    }
   }
 
   return (
@@ -42,6 +59,8 @@ export default function Home() {
         { 
           (registrationSuccessful == false) && 
           <div>
+            { (errorMsg.length !== 0) && <h4 className='text-red-500 mb-2 animate-bounce'>{errorMsg}</h4> }
+
             <h1 className="font-semibold text-2xl mb-2 font-sora">Unleash Your Brilliance, Enroll Today!</h1>
             <h4 className='text-[#5B5B5B] text-sm mb-10'>Discover a world of fun learning, dive into exciting courses, and let your brilliance shine. Register now and let the adventure begin!</h4>
 
@@ -146,7 +165,22 @@ export default function Home() {
                 </select>
               </div>
 
-              <button className='bg-[#346ED6] py-[16px] px-[96px] text-[#fff] w-[fit-content] self-center rounded-[24px] hover:bg-[#0f429e] my-4' type='submit'>Apply Now</button>
+              <button className='bg-[#346ED6] py-[16px] px-[96px] text-[#fff] w-[fit-content] self-center rounded-[24px] hover:bg-[#0f429e] my-4' type='submit'>
+                <div className='flex items-center'>
+                  { 
+                    loading && 
+                    <div
+                      className="mr-[15px] inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                      role="status">
+                      <span
+                        className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+                        >Loading...
+                      </span>
+                    </div>
+                  }
+                  Apply Now
+                </div>
+              </button>
             </form>
           </div>
         }
