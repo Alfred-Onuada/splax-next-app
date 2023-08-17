@@ -6,7 +6,7 @@ import Link from 'next/link'
 export default function Home() {
   return (
     <main className="bg-[#F3F4F6] min-w-[100vw] min-h-[100vh] flex md:justify-center items-center flex-col p-[20px] md:p-[70px]">
-      <div className='md:max-w-[50vw] md:min-w-[50vw] items-start mb-14 max-w-[90vw] min-w-[90vw]'>
+      <div className='md:max-w-[70vw] md:min-w-[70vw] lg:min-w-[50vw] lg:max-w-[50vw] items-start mb-14 max-w-[90vw] min-w-[90vw]'>
         <Image
           src="./softworld-logo.svg"
           alt="Softworld Logo"
@@ -16,7 +16,7 @@ export default function Home() {
         />
       </div>
       {/* Login Form */}
-      <div className="rounded-[18px] bg-[#fff] shadow-custom md:py-[48px] md:px-[40px] py-[32px] px-[20px] flex text-center flex-col md:max-w-[50vw] md:min-w-[50vw]
+      <div className="rounded-[18px] bg-[#fff] shadow-custom md:py-[48px] md:px-[40px] py-[32px] px-[20px] flex text-center flex-col md:max-w-[70vw] md:min-w-[70vw] lg:min-w-[50vw] lg:max-w-[50vw] 
         max-w-[90vw] min-w-[90vw]">
         <h1 className="font-normal text-2xl mb-2">Login to your account</h1>
         <h4 className='text-[#5B5B5B] text-sm mb-10'>Kindly input your details to login in to your dashboard</h4>
