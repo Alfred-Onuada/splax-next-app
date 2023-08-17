@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import defaultTheme from 'tailwindcss/defaultTheme';
 
 const config: Config = {
   content: [
@@ -11,6 +12,10 @@ const config: Config = {
       backgroundImage: {},
       boxShadow: {
         'custom': '0px 4px 16px 0px rgba(0, 0, 0, 0.25)'
+      },
+      fontFamily: {
+        'sora': ['Sora', ...defaultTheme.fontFamily.sans],
+        'nunito': ['Nunito', ...defaultTheme.fontFamily.sans]
       }
     },
   },
