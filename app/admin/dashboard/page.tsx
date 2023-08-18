@@ -43,12 +43,16 @@ const Home: NextPage = () => {
   const [pageNo, setPageNo] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(5);
   const [openActionId, setOpenActionId] = useState<number>(-1);
+  const [acceptLoadingId, setAcceptLoadingId] = useState<number>(-1);
+  const [rejectLoadingId, setRejectLoadingId] = useState<number>(-1);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
+
         const resp = await axios.get(`${BASE_API}/admins/trainees`, { 
           headers: { 
             'Content-Type': 'application/json',
@@ -66,6 +70,7 @@ const Home: NextPage = () => {
         }
 
         setErrorMsg('An error occured, please try again');
+      } finally {
         setLoading(false);
       }
     })()
@@ -92,8 +97,7 @@ const Home: NextPage = () => {
   }
 
   const accept = async (index: number) => {
-    console.log(index);
-    
+    setAcceptLoadingId(index);    
     try {
       const resp = await axios.patch(
         `${BASE_API}/admins/trainees/${traineesAll[index].userid}/approval`, 
@@ -117,17 +121,19 @@ const Home: NextPage = () => {
       });
     } catch {
       setErrorMsg('An error occured, please try again');
-      setLoading(false);
 
       setTimeout(() => {
         setErrorMsg('');
       }, 3000);
     } finally {
       setOpenActionId(-1);
+      setAcceptLoadingId(-1);
     }
   }
 
   const reject = async (index: number) => {
+    setRejectLoadingId(index);
+
     try {
       const resp = await axios.patch(
         `${BASE_API}/admins/trainees/${traineesAll[index].userid}/approval`, 
@@ -151,13 +157,13 @@ const Home: NextPage = () => {
       });
     } catch {
       setErrorMsg('An error occured, please try again');
-      setLoading(false);
 
       setTimeout(() => {
         setErrorMsg('');
       }, 3000);
     } finally {
       setOpenActionId(-1);
+      setRejectLoadingId(-1);
     }
   }
 
@@ -261,99 +267,150 @@ const Home: NextPage = () => {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className='mt-5 w-[100vw] max-w-[100vw] bg-[#FBFBFB]'>
-                <thead className='bg-[#F4F6F8]'>
-                  <tr>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Full Name</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Email Address</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Phone Number</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Gender Category</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Training Interest</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Experience</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Period</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Status</th>
-                    <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  { 
-                    trainees.map((trainee, index) => {
-                      // recalculate the index
-                      index = ((pageNo * pageSize) - pageSize) + index;
+            {
+              loading && (
+                <div className='flex justify-center items-center w-full h-[300px]'>
+                  <div
+                    className="inline-block h-20 w-20 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                    role="status">
+                    <span
+                      className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+                      >Loading...
+                    </span>
+                  </div>
+                </div>
+              )
+            }
 
-                      return (
-                        <tr className='bg-[#fff]' key={index}>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.lastname } { trainee.firstname }</td>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>
-                            <a href={"mailto:" + trainee.email}>{ trainee.email }</a>
-                          </td>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>{ trainee.phone }</td>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.gender }</td>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.interest }</td>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experience }</td>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experienceLength }</td>
-                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>
-                            {
-                              trainee.status === "pending" ? (
-                                <span className='bg-[#FFF7CD] rounded-[8px] text-[#B78103]  text-sm py-[4px] px-[15px]'>Pending</span>
-                              ): trainee.status === "rejected" ? (
-                                <span className='bg-[#FFE7D9] rounded-[8px] text-[#FF4842] text-sm py-[4px] px-[15px]'>Rejected</span>
-                              ): (
-                                <span className='bg-[#E9FCD4] rounded-[8px] text-[#54D62C] text-sm py-[4px] px-[15px]'>Accepted</span>
-                              )
-                            }
-                          </td>
-                          <td className='py-[12px] px-[15px] flex justify-center'>
-                            <div className='bg-[#F5F7F9] px-[20px] py-[10px] rounded-md relative'
-                              onClick={() => setOpenActionId(index)}>
-                              <Image
-                                src='./../3-bars.svg'
-                                alt='3 Bars'
-                                width={5}
-                                height={5}
-                                />
-                              { 
-                                openActionId === index && (
-                                  <div className='absolute left-0 top-0 rounded-md shadow-custom bg-[#fff] py-[8px] px-[24px] z-10'>
-                                    <div className='my-5 flex items-center cursor-pointer'
-                                      onClick={() => accept(index)}>
-                                      <span className='mr-[10px]'>
-                                        <Image
-                                          src='./../accept.svg'
-                                          alt='Accept'
-                                          width={20}
-                                          height={20}
-                                          className='max-w-none'
-                                          />
-                                      </span>
-                                      <h4>Accept</h4>
-                                    </div>
-                                    <div className='my-5 flex items-center cursor-pointer'
-                                      onClick={() => reject(index)}>
-                                      <span className='mr-[10px]'>
-                                        <Image
-                                          src='./../reject.svg'
-                                          alt='Reject'
-                                          width={20}
-                                          height={20}
-                                          className='max-w-none'
-                                          />
-                                      </span>
-                                      <h4>Reject</h4>
-                                    </div>
-                                  </div>
-                                ) 
-                              }
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    }) 
-                  }
-                </tbody>
-              </table>
-            </div>
+            { 
+              loading === false && (
+                <div className="overflow-x-auto">
+                  <table className='mt-5 w-[100vw] max-w-[100vw] bg-[#FBFBFB]'>
+                    <thead className='bg-[#F4F6F8]'>
+                      <tr>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Full Name</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Email Address</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Phone Number</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Gender Category</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Training Interest</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Experience</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Period</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Status</th>
+                        <th className='text-left uppercase text-base font-medium py-[12px] px-[15px]'>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      { 
+                        trainees.map((trainee, index) => {
+                          // recalculate the index
+                          index = ((pageNo * pageSize) - pageSize) + index;
+
+                          return (
+                            <tr className='bg-[#fff]' key={index}>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.lastname } { trainee.firstname }</td>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>
+                                <a href={"mailto:" + trainee.email}>{ trainee.email }</a>
+                              </td>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>{ trainee.phone }</td>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.gender }</td>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.interest }</td>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experience }</td>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experienceLength }</td>
+                              <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>
+                                {
+                                  trainee.status === "pending" ? (
+                                    <span className='bg-[#FFF7CD] rounded-[8px] text-[#B78103]  text-sm py-[4px] px-[15px]'>Pending</span>
+                                  ): trainee.status === "rejected" ? (
+                                    <span className='bg-[#FFE7D9] rounded-[8px] text-[#FF4842] text-sm py-[4px] px-[15px]'>Rejected</span>
+                                  ): (
+                                    <span className='bg-[#E9FCD4] rounded-[8px] text-[#54D62C] text-sm py-[4px] px-[15px]'>Accepted</span>
+                                  )
+                                }
+                              </td>
+                              <td className='py-[12px] px-[15px] flex justify-center'>
+                                <div className='bg-[#F5F7F9] px-[20px] py-[10px] rounded-md relative'
+                                  onClick={() => setOpenActionId(index)}>
+                                  <Image
+                                    src='./../3-bars.svg'
+                                    alt='3 Bars'
+                                    width={5}
+                                    height={5}
+                                    />
+                                  { 
+                                    openActionId === index && (
+                                      <div className='absolute left-0 top-0 rounded-md shadow-custom bg-[#fff] py-[8px] px-[24px] z-10'>
+                                        <div className='my-5 flex items-center cursor-pointer'
+                                          onClick={() => accept(index)}>
+                                          <span className='mr-[10px]'>
+                                            {
+                                              acceptLoadingId !== index && (
+                                                <Image
+                                                  src='./../accept.svg'
+                                                  alt='Accept'
+                                                  width={20}
+                                                  height={20}
+                                                  className='max-w-none'
+                                                  />
+                                              )
+                                            }
+                                            {
+                                              acceptLoadingId === index && (
+                                                <div
+                                                  className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                                                  role="status">
+                                                  <span
+                                                    className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+                                                    >Loading...
+                                                  </span>
+                                                </div>
+                                              )
+                                            }
+                                          </span>
+                                          <h4>Accept</h4>
+                                        </div>
+                                        <div className='my-5 flex items-center cursor-pointer'
+                                          onClick={() => reject(index)}>
+                                          <span className='mr-[10px]'>
+                                            {
+                                              rejectLoadingId !== index && (
+                                                <Image
+                                                  src='./../reject.svg'
+                                                  alt='Reject'
+                                                  width={20}
+                                                  height={20}
+                                                  className='max-w-none'
+                                                  />
+                                              )
+                                            }
+                                            {
+                                              rejectLoadingId === index && (
+                                                <div
+                                                  className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                                                  role="status">
+                                                  <span
+                                                    className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+                                                    >Loading...
+                                                  </span>
+                                                </div>
+                                              )
+                                            }
+                                          </span>
+                                          <h4>Reject</h4>
+                                        </div>
+                                      </div>
+                                    ) 
+                                  }
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        }) 
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              ) 
+            }
 
           </div>
 
