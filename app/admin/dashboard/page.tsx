@@ -1,7 +1,95 @@
+'use client';
+
 import Image from 'next/image'
 import userImage from './../../../public/user.png';
+import IsAuth from '../isAuthenticated';
+import { NextPage } from 'next';
+import { useEffect, useState } from 'react';
+import { BASE_API } from '@/app/constants/env';
+import axios from 'axios';
 
-export default function Home() {
+interface userInterface {
+  email: string;
+  firstname: string;
+  gender: string;
+  lastname: string;
+  phone: string;
+  user_type: string;
+  userid: number;
+}
+
+interface traineesInterface {
+  category: string;
+  email: string;
+  experience: string;
+  experienceLength: string;
+  firstname: string;
+  gender: string;
+  interest: string;
+  lastname: string;
+  phone: string;
+  status: "accepted" | "pending" | "rejected";
+  user_type: string;
+  userid: number;
+}
+
+const Home: NextPage = () => {
+  // temp store for all data for pagination
+  const [traineesAll, setTraineesAll] = useState<traineesInterface[]>([]);
+
+  const user: userInterface = JSON.parse(localStorage.getItem('user') || '{}');
+  const [trainees, setTrainees] = useState<traineesInterface[]>([]);
+  const [traineeCount, setTraineeCount] = useState<number>(0);
+  const [pageNo, setPageNo] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(5);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await axios.get(`${BASE_API}/admins/trainees`, { 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token') || ''
+          } 
+        });
+        
+        setTraineeCount(resp.data.trainee.length);
+        setTraineesAll(resp.data.trainee);
+        setTrainees(resp.data.trainee.slice(0, pageSize));
+      } catch (error: any) {
+        if (error.response.status === 401) {
+          window.location.href = '/admin';
+          return;
+        }
+
+        setErrorMsg('An error occured, please try again');
+        setLoading(false);
+      }
+    })()
+  }, []);
+
+  const nextPage = () => {
+    setPageNo(prevPageNo => {
+      const newPageNo = prevPageNo + 1
+
+      setTrainees(traineesAll.slice((newPageNo * pageSize) - pageSize, newPageNo * pageSize));
+      
+      return newPageNo;
+    });
+  }
+
+  const prevPage = () => {
+    setPageNo(prevPageNo => {
+      const newPageNo = prevPageNo - 1
+
+      setTrainees(traineesAll.slice((newPageNo * pageSize) - pageSize, newPageNo * pageSize));
+      
+      return newPageNo;
+    });
+  }
+
   return (
     <main className="bg-[#F3F4F6] min-w-[100vw] min-h-[100vh] py-[20px] md:px-[20px] px-[15px]">
       <div className='flex justify-between items-center'>
@@ -55,8 +143,8 @@ export default function Home() {
       <hr className='w-full m-5' />
       <div className='flex flex-col'>
         <div className='flex justify-between items-center'>
-          <h4 className='text-lg font-semibold'>Welcome, John</h4>
-          <h4 className='text-base text-[#637381]'>324 Applicants</h4>
+          <h4 className='text-lg font-semibold'>Welcome, { user.firstname }</h4>
+          <h4 className='text-base text-[#637381]'>{ traineeCount } Applicants</h4>
         </div>
 
         <div className="rounded-[18px] bg-[#FBFBFB] shadow-sm md:py-[48px] md:px-[20px] py-[32px] px-[10px] flex text-center flex-col
@@ -116,59 +204,105 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className='bg-[#fff]'>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>John Doe</td>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>
-                      <a href="mailto:ldlald@gmail.com">adl@gmail.com</a>
-                    </td>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>+234 123 456 7890</td>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>Male</td>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>UI/UX Design</td>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>No</td>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>&gt; 2 Years</td>
-                    <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>
-                      <span className='bg-[#E9FCD4] rounded-[8px] text-[#54D62C] text-sm py-[4px] px-[15px]'>Accepted</span>
-                    </td>
-                    <td className='py-[12px] px-[15px] flex justify-center'>
-                      <div className='bg-[#F5F7F9] px-[20px] py-[10px] rounded-md relative'>
-                        <Image
-                          src='./../3-bars.svg'
-                          alt='3 Bars'
-                          width={5}
-                          height={5}
-                          />
-                          {/* <div className='absolute top-0 left-0 rounded-md shadow-custom bg-[#fff] py-[16px] px-[10px] z-10'>
-                            <div className='my-2 flex w-max'>
-                              <span className='px-[10px]'>
-                                <Image
-                                  src='./../accept.svg'
-                                  alt='Accept'
-                                  width={20}
-                                  height={20}
-                                  />
-                              </span>
-                              <h4>Accept</h4>
-                            </div>
-                            <div className='my-2 flex w-max'>
-                              <span className='px-[10px]'>
-                                <Image
-                                  src='./../reject.svg'
-                                  alt='Reject'
-                                  width={20}
-                                  height={20}
-                                  />
-                              </span>
-                              <h4>Reject</h4>
-                            </div>
-                          </div> */}
-                      </div>
-                    </td>
-                  </tr>
+                  { 
+                    trainees.map((trainee, index) => (
+                      <tr className='bg-[#fff]' key={index}>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.lastname } { trainee.firstname }</td>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>
+                          <a href={"mailto:" + trainee.email}>{ trainee.email }</a>
+                        </td>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>{ trainee.phone }</td>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.gender }</td>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.interest }</td>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experience }</td>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experienceLength }</td>
+                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>
+                          {
+                            trainee.status === "pending" ? (
+                              <span className='bg-[#FFF7CD] rounded-[8px] text-[#B78103]  text-sm py-[4px] px-[15px]'>Pending</span>
+                            ): trainee.status === "rejected" ? (
+                              <span className='bg-[#FFE7D9] rounded-[8px] text-[#FF4842] text-sm py-[4px] px-[15px]'>Rejected</span>
+                            ): (
+                              <span className='bg-[#E9FCD4] rounded-[8px] text-[#54D62C] text-sm py-[4px] px-[15px]'>Accepted</span>
+                            )
+                          }
+                        </td>
+                        <td className='py-[12px] px-[15px] flex justify-center'>
+                          <div className='bg-[#F5F7F9] px-[20px] py-[10px] rounded-md relative'>
+                            <Image
+                              src='./../3-bars.svg'
+                              alt='3 Bars'
+                              width={5}
+                              height={5}
+                              />
+                              {/* <div className='absolute top-0 left-0 rounded-md shadow-custom bg-[#fff] py-[16px] px-[10px] z-10'>
+                                <div className='my-2 flex w-max'>
+                                  <span className='px-[10px]'>
+                                    <Image
+                                      src='./../accept.svg'
+                                      alt='Accept'
+                                      width={20}
+                                      height={20}
+                                      />
+                                  </span>
+                                  <h4>Accept</h4>
+                                </div>
+                                <div className='my-2 flex w-max'>
+                                  <span className='px-[10px]'>
+                                    <Image
+                                      src='./../reject.svg'
+                                      alt='Reject'
+                                      width={20}
+                                      height={20}
+                                      />
+                                  </span>
+                                  <h4>Reject</h4>
+                                </div>
+                              </div> */}
+                          </div>
+                        </td>
+                      </tr>
+                    )) 
+                  }
                 </tbody>
               </table>
             </div>
-        </div>
+
+          </div>
+
+          { 
+            traineeCount > 0 && (
+              <div className='flex justify-between items-center mt-10'>
+                <h4 className='font-light font-nunito text-sm'>Rows per page:</h4>
+                <h4 className='font-light font-nunito text-sm'>{ ((pageSize * pageNo) - pageSize) + 1} - { (pageSize * pageNo) > traineeCount ? traineeCount : (pageSize * pageNo) } of { traineeCount }</h4>
+                <div className='flex items-center'>
+                  <button disabled={pageNo == 1}
+                    onClick={() => prevPage()}>
+                    <Image
+                      src='./../left.svg'
+                      alt='Pagination Arrow'
+                      width={20}
+                      height={20}
+                      className={'mr-[10px]' + (pageNo == 1 ? ' opacity-30' : '')}
+                      />
+                  </button>
+                  <button disabled={pageNo == Math.ceil(traineeCount / pageSize)}
+                    onClick={() => nextPage()}>
+                    <Image
+                      src='./../right.svg'
+                      alt='Pagination Arrow'
+                      width={20}
+                      height={20}
+                      className={'ml-[10px]' + (pageNo == Math.ceil(traineeCount / pageSize) ? ' opacity-30' : '')}
+                      />
+                  </button>
+                </div>
+              </div>
+            ) 
+          }
       </div>
     </main>
   )
 }
+
+export default IsAuth(Home);

@@ -13,16 +13,16 @@ export default function Home() {
 
   // function to handle registration
   const handleRegistration = async (e: any) => {
-    e.preventDefault()
+    e.preventDefault();
     setLoading(true);
 
     // get form data
     const formData = new FormData(e.target)
     const data = Object.fromEntries(formData.entries())
 
-    const resp = await axios.post(`${BASE_API}/trainees/enroll`, data, { headers: { 'Content-Type': 'application/json' } });
+    try {
+      const resp = await axios.post(`${BASE_API}/trainees/enroll`, data, { headers: { 'Content-Type': 'application/json' } });
 
-    if (resp.status === 201) {
       setRegistrationSuccessful(true);
       e.target.reset();
       setLoading(false);
@@ -30,7 +30,7 @@ export default function Home() {
       setTimeout(() => {
         setRegistrationSuccessful(false)
       }, 3000);
-    } else {
+    } catch (error) {
       setErrorMsg('An error occured, please try again');
       setLoading(false);
 
@@ -115,10 +115,10 @@ export default function Home() {
                   className='rounded-[8px] border border-[#9ca3af] items-center p-[16px] w-full text-[#5B5B5B]'
                   required>
                   <option value="">Select your category</option>
-                  <option value="Career Switching">Career Switching</option>
-                  <option value="Student">Student</option>
-                  <option value="Graduate">Graduate</option>
-                  <option value="Corporate">Corporate</option>
+                  <option value="career switching">Career Switching</option>
+                  <option value="student">Student</option>
+                  <option value="graduate">Graduate</option>
+                  <option value="corporate">Corporate</option>
                 </select>
               </div>
 
@@ -128,17 +128,17 @@ export default function Home() {
                   className='rounded-[8px] border border-[#9ca3af] items-center p-[16px] w-full text-[#5B5B5B]'
                   required>
                   <option value="">Select your training interest</option>
-                  <option value="data-analysis">Data Analysis</option>
-                  <option value="uiux-design">UI/UX Design</option>
-                  <option value="product-marketing">Product Marketing</option>
-                  <option value="business-analyst">Business Analyst</option>
-                  <option value="project-management">Project Management</option>
-                  <option value="product-management">Product Management</option>
-                  <option value="software-quality-testing">Software Quality Testing</option>
-                  <option value="frontend-development">Frontend Development</option>
-                  <option value="backend-development">Backend Development</option>
-                  <option value="mobile-app-development">Mobile App Development</option>
-                  <option value="devops-engineering">DevOps Engineering</option>
+                  <option value="data analysis">Data Analysis</option>
+                  <option value="uiux design">UI/UX Design</option>
+                  <option value="product marketing">Product Marketing</option>
+                  <option value="business analyst">Business Analyst</option>
+                  <option value="project management">Project Management</option>
+                  <option value="product management">Product Management</option>
+                  <option value="software quality testing">Software Quality Testing</option>
+                  <option value="frontend development">Frontend Development</option>
+                  <option value="backend development">Backend Development</option>
+                  <option value="mobile app development">Mobile App Development</option>
+                  <option value="devops engineering">DevOps Engineering</option>
                 </select>
               </div>
 
@@ -159,9 +159,9 @@ export default function Home() {
                   className='rounded-[8px] border border-[#9ca3af] items-center p-[16px] w-full text-[#5B5B5B]'
                   required>
                   <option value="">What is the length of your experience</option>
-                  <option value="6months">&lt; 6 Months</option>
-                  <option value="1year">&gt; 1 Year</option>
-                  <option value="2years">&gt; 2 Years</option>
+                  <option value="< 6 months">&lt; 6 Months</option>
+                  <option value="> 1 year">&gt; 1 Year</option>
+                  <option value="> 2 years">&gt; 2 Years</option>
                 </select>
               </div>
 
