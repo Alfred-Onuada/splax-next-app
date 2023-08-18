@@ -2,8 +2,6 @@
 
 import Image from 'next/image'
 import userImage from './../../../public/user.png';
-import IsAuth from '../isAuthenticated';
-import { NextPage } from 'next';
 import { useEffect, useState } from 'react';
 import { BASE_API } from '@/app/constants/env';
 import axios from 'axios';
@@ -33,11 +31,11 @@ interface traineesInterface {
   userid: number;
 }
 
-const Home: NextPage = () => {
+const Home = () => {
   // temp store for all data for pagination
   const [traineesAll, setTraineesAll] = useState<traineesInterface[]>([]);
 
-  const user: userInterface = JSON.parse(localStorage.getItem('user') || '{}');
+  let user!: userInterface;
   const [trainees, setTrainees] = useState<traineesInterface[]>([]);
   const [traineeCount, setTraineeCount] = useState<number>(0);
   const [pageNo, setPageNo] = useState<number>(1);
@@ -53,6 +51,14 @@ const Home: NextPage = () => {
       try {
         setLoading(true);
 
+        user = JSON.parse(localStorage.getItem('user') || '{}');
+        const access_token = localStorage.getItem('access_token');
+
+        if (!user || !access_token || Object.keys(user).length === 0 || access_token === '') {
+          window.location.href = '/admin';
+          return <></>;
+        }
+    
         const resp = await axios.get(`${BASE_API}/admins/trainees`, { 
           headers: { 
             'Content-Type': 'application/json',
@@ -220,7 +226,7 @@ const Home: NextPage = () => {
       <hr className='w-full m-5' />
       <div className='flex flex-col'>
         <div className='flex justify-between items-center'>
-          <h4 className='text-lg font-semibold'>Welcome, { user.firstname }</h4>
+          <h4 className='text-lg font-semibold'>Welcome, { user?.firstname }</h4>
           <h4 className='text-base text-[#637381]'>{ traineeCount } Applicants</h4>
         </div>
 
@@ -449,4 +455,4 @@ const Home: NextPage = () => {
   )
 }
 
-export default IsAuth(Home);
+export default Home;
