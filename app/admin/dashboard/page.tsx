@@ -42,6 +42,7 @@ const Home: NextPage = () => {
   const [traineeCount, setTraineeCount] = useState<number>(0);
   const [pageNo, setPageNo] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(5);
+  const [openActionId, setOpenActionId] = useState<number>(-1);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -88,6 +89,76 @@ const Home: NextPage = () => {
       
       return newPageNo;
     });
+  }
+
+  const accept = async (index: number) => {
+    console.log(index);
+    
+    try {
+      const resp = await axios.patch(
+        `${BASE_API}/admins/trainees/${traineesAll[index].userid}/approval`, 
+        {
+          approved: true,
+          traineeId: traineesAll[index].userid
+        },
+        {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token') || '',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      setTraineesAll(prevTrainees => {
+        const newTrainees = [...prevTrainees];
+        newTrainees[index].status = 'accepted';
+
+        return newTrainees;
+      });
+    } catch {
+      setErrorMsg('An error occured, please try again');
+      setLoading(false);
+
+      setTimeout(() => {
+        setErrorMsg('');
+      }, 3000);
+    } finally {
+      setOpenActionId(-1);
+    }
+  }
+
+  const reject = async (index: number) => {
+    try {
+      const resp = await axios.patch(
+        `${BASE_API}/admins/trainees/${traineesAll[index].userid}/approval`, 
+        {
+          approved: false,
+          traineeId: traineesAll[index].userid
+        },
+        {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token') || '',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      setTraineesAll(prevTrainees => {
+        const newTrainees = [...prevTrainees];
+        newTrainees[index].status = 'rejected';
+
+        return newTrainees;
+      });
+    } catch {
+      setErrorMsg('An error occured, please try again');
+      setLoading(false);
+
+      setTimeout(() => {
+        setErrorMsg('');
+      }, 3000);
+    } finally {
+      setOpenActionId(-1);
+    }
   }
 
   return (
@@ -147,6 +218,8 @@ const Home: NextPage = () => {
           <h4 className='text-base text-[#637381]'>{ traineeCount } Applicants</h4>
         </div>
 
+        { (errorMsg.length !== 0) && <h4 className='text-red-500 mt-3 animate-bounce self-center'>{ errorMsg }</h4> }
+
         <div className="rounded-[18px] bg-[#FBFBFB] shadow-sm md:py-[48px] md:px-[20px] py-[32px] px-[10px] flex text-center flex-col
           max-w-[100%] min-w-[100%] self-center mt-10">
             <div className='flex justify-between items-center'>
@@ -205,64 +278,78 @@ const Home: NextPage = () => {
                 </thead>
                 <tbody>
                   { 
-                    trainees.map((trainee, index) => (
-                      <tr className='bg-[#fff]' key={index}>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.lastname } { trainee.firstname }</td>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>
-                          <a href={"mailto:" + trainee.email}>{ trainee.email }</a>
-                        </td>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>{ trainee.phone }</td>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.gender }</td>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.interest }</td>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experience }</td>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experienceLength }</td>
-                        <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>
-                          {
-                            trainee.status === "pending" ? (
-                              <span className='bg-[#FFF7CD] rounded-[8px] text-[#B78103]  text-sm py-[4px] px-[15px]'>Pending</span>
-                            ): trainee.status === "rejected" ? (
-                              <span className='bg-[#FFE7D9] rounded-[8px] text-[#FF4842] text-sm py-[4px] px-[15px]'>Rejected</span>
-                            ): (
-                              <span className='bg-[#E9FCD4] rounded-[8px] text-[#54D62C] text-sm py-[4px] px-[15px]'>Accepted</span>
-                            )
-                          }
-                        </td>
-                        <td className='py-[12px] px-[15px] flex justify-center'>
-                          <div className='bg-[#F5F7F9] px-[20px] py-[10px] rounded-md relative'>
-                            <Image
-                              src='./../3-bars.svg'
-                              alt='3 Bars'
-                              width={5}
-                              height={5}
-                              />
-                              {/* <div className='absolute top-0 left-0 rounded-md shadow-custom bg-[#fff] py-[16px] px-[10px] z-10'>
-                                <div className='my-2 flex w-max'>
-                                  <span className='px-[10px]'>
-                                    <Image
-                                      src='./../accept.svg'
-                                      alt='Accept'
-                                      width={20}
-                                      height={20}
-                                      />
-                                  </span>
-                                  <h4>Accept</h4>
-                                </div>
-                                <div className='my-2 flex w-max'>
-                                  <span className='px-[10px]'>
-                                    <Image
-                                      src='./../reject.svg'
-                                      alt='Reject'
-                                      width={20}
-                                      height={20}
-                                      />
-                                  </span>
-                                  <h4>Reject</h4>
-                                </div>
-                              </div> */}
-                          </div>
-                        </td>
-                      </tr>
-                    )) 
+                    trainees.map((trainee, index) => {
+                      // recalculate the index
+                      index = ((pageNo * pageSize) - pageSize) + index;
+
+                      return (
+                        <tr className='bg-[#fff]' key={index}>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.lastname } { trainee.firstname }</td>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>
+                            <a href={"mailto:" + trainee.email}>{ trainee.email }</a>
+                          </td>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381]'>{ trainee.phone }</td>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.gender }</td>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.interest }</td>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experience }</td>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>{ trainee.experienceLength }</td>
+                          <td className='text-left text-sm py-[12px] px-[15px] text-[#637381] capitalize'>
+                            {
+                              trainee.status === "pending" ? (
+                                <span className='bg-[#FFF7CD] rounded-[8px] text-[#B78103]  text-sm py-[4px] px-[15px]'>Pending</span>
+                              ): trainee.status === "rejected" ? (
+                                <span className='bg-[#FFE7D9] rounded-[8px] text-[#FF4842] text-sm py-[4px] px-[15px]'>Rejected</span>
+                              ): (
+                                <span className='bg-[#E9FCD4] rounded-[8px] text-[#54D62C] text-sm py-[4px] px-[15px]'>Accepted</span>
+                              )
+                            }
+                          </td>
+                          <td className='py-[12px] px-[15px] flex justify-center'>
+                            <div className='bg-[#F5F7F9] px-[20px] py-[10px] rounded-md relative'
+                              onClick={() => setOpenActionId(index)}>
+                              <Image
+                                src='./../3-bars.svg'
+                                alt='3 Bars'
+                                width={5}
+                                height={5}
+                                />
+                              { 
+                                openActionId === index && (
+                                  <div className='absolute left-0 top-0 rounded-md shadow-custom bg-[#fff] py-[8px] px-[24px] z-10'>
+                                    <div className='my-5 flex items-center cursor-pointer'
+                                      onClick={() => accept(index)}>
+                                      <span className='mr-[10px]'>
+                                        <Image
+                                          src='./../accept.svg'
+                                          alt='Accept'
+                                          width={20}
+                                          height={20}
+                                          className='max-w-none'
+                                          />
+                                      </span>
+                                      <h4>Accept</h4>
+                                    </div>
+                                    <div className='my-5 flex items-center cursor-pointer'
+                                      onClick={() => reject(index)}>
+                                      <span className='mr-[10px]'>
+                                        <Image
+                                          src='./../reject.svg'
+                                          alt='Reject'
+                                          width={20}
+                                          height={20}
+                                          className='max-w-none'
+                                          />
+                                      </span>
+                                      <h4>Reject</h4>
+                                    </div>
+                                  </div>
+                                ) 
+                              }
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    }) 
                   }
                 </tbody>
               </table>
